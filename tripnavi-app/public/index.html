@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourist Spot Finder</title>
+</head>
+<body>
+    <h1>観光地検索アプリ</h1>
+    <form id="locationForm">
+        <label for="location">場所または緯度・経度を入力してください:</label>
+        <input type="text" id="location" name="location" required>
+        <button type="submit">検索</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        const form = document.getElementById('locationForm');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const location = document.getElementById('location').value;
+            const resultDiv = document.getElementById('result');
+
+            try {
+                const response = await fetch('/get-tourist-spots', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ location })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    resultDiv.innerHTML = `<h3>観光地:</h3><p>${data.data}</p>`;
+                } else {
+                    resultDiv.innerHTML = `<p>観光地を取得できませんでした。</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p>エラーが発生しました。</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
