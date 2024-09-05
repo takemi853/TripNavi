@@ -10,7 +10,6 @@ export default function Home() {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setLoading(true);
-
         try {
             const response = await fetch('/api/get-tourist-spots', {
                 method: 'POST',
