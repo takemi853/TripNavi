@@ -5,22 +5,33 @@ export async function POST(request: NextRequest) {
     console.log("APIリクエストを受け取りました");
 
     try {
-        const { location } = await request.json();
+        const { lat, lon, location } = await request.json();
 
-        if (!location) {
-            console.log("場所が入力されていません");
-            return NextResponse.json({ success: false, message: '場所を入力してください' }, { status: 400 });
+        // 緯度・経度、または場所の名前が存在するかチェック
+        if ((!lat || !lon) && !location) {
+            console.log("緯度・経度または場所の名前が入力されていません");
+            return NextResponse.json({ success: false, message: '緯度・経度または場所の名前を入力してください' }, { status: 400 });
         }
 
         const apiKey = process.env.OPENAI_API_KEY;
-        
+
         // APIキーが未設定の場合
         if (!apiKey) {
             console.error("OpenAI APIキーが設定されていません");
             return NextResponse.json({ success: false, message: 'APIキーが設定されていません' }, { status: 500 });
         }
 
-        const prompt = `Give me the top tourist attractions in ${location}.`;
+        // プロンプトを生成
+        let prompt: string;
+        if (lat && lon) {
+            prompt = `緯度${lat}、経度${lon}の周辺にある有名な観光地のリストを作成してください。各観光地の名前、簡単な説明、そしてその場所がどのような人におすすめかをタグとして日本語で提供してください。\
+                        json形式: [ { "name": "観光地の名前", "description": "観光地の簡単な説明", "tags": ["おすすめの人のタグ", "複数のタグがある場合はカンマで区切る"] } ]」`;
+        } else if (location) {
+            prompt = `場所「${location}」周辺にある有名な観光地のリストを、以下の形式で返してください。各観光地に対して名前、簡単な説明、そしてその場所がどのような人におすすめかをタグとして日本語で提供してください。 \
+                        json形式: [ { "name": "観光地の名前", "description": "観光地の簡単な説明", "tags": ["おすすめの人のタグ", "複数のタグがある場合はカンマで区切る"] } ]」`;
+        } else {
+            return NextResponse.json({ success: false, message: '有効な入力がありません' }, { status: 400 });
+        }
 
         // OpenAI APIのレスポンスの型定義
         interface OpenAIResponse {
@@ -35,7 +46,7 @@ export async function POST(request: NextRequest) {
         const response = await axios.post<OpenAIResponse>(
             'https://api.openai.com/v1/chat/completions',
             {
-                model: 'gpt-3.5-turbo',
+                model: 'gpt-3.5-turbo',  // 必要に応じてモデルを変更
                 messages: [{ role: 'user', content: prompt }],
             },
             {
@@ -50,6 +61,7 @@ export async function POST(request: NextRequest) {
         console.log("OpenAI APIレスポンス:", response.data);
 
         const touristSpots = response.data.choices[0].message.content;
+        console.log("観光地リスト:", touristSpots);
         return NextResponse.json({ success: true, data: touristSpots }, { status: 200 });
 
     } catch (error: any) {

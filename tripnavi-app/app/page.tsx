@@ -1,32 +1,32 @@
-'use client';
-
+'use client';  
 import { useState } from 'react';
 
 export default function Home() {
     const [location, setLocation] = useState('');
-    const [result, setResult] = useState('');
+    const [result, setResult] = useState<any[]>([]); // 観光地のデータを格納する
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setLoading(true);
+
         try {
             const response = await fetch('/api/get-tourist-spots', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ location }),
+                body: JSON.stringify({ location }), // フォームに入力されたデータを送信
             });
 
             const data = await response.json();
             if (data.success) {
-                setResult(data.data);
+                setResult(JSON.parse(data.data)); // JSONデータをパースしてセット
             } else {
-                setResult('観光地の取得に失敗しました');
+                setResult([]);
             }
         } catch (error) {
-            setResult('エラーが発生しました');
+            setResult([]);
         } finally {
             setLoading(false);
         }
@@ -62,13 +62,30 @@ export default function Home() {
 
                 {loading ? (
                     <p className="text-center mt-4">検索中...</p>
-                ) : (
-                    result && (
-                        <div className="mt-6 bg-gray-100 p-4 rounded-md shadow">
-                            <h3 className="text-lg font-semibold">観光地:</h3>
-                            <p>{result}</p>
+                ) : result.length > 0 ? (
+                    <div className="mt-6">
+                        <h3 className="text-lg font-semibold">観光地リスト:</h3>
+                        <div className="grid grid-cols-1 gap-4">
+                            {result.map((spot, index) => (
+                                <div key={index} className="bg-gray-100 p-4 rounded-md shadow-md">
+                                    <h2 className="text-xl font-semibold mb-2">{spot.name}</h2>
+                                    <p className="text-gray-700 mb-4">{spot.description}</p>
+                                    <div className="flex flex-wrap">
+                                        {spot.tags.map((tag: string, tagIndex: number) => (
+                                            <span
+                                                key={tagIndex}
+                                                className="text-sm bg-blue-100 text-blue-800 py-1 px-3 rounded-full mr-2 mb-2"
+                                            >
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    )
+                    </div>
+                ) : (
+                    <p className="text-center mt-4">結果がありません</p>
                 )}
             </div>
         </div>
