@@ -1,14 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // useRouterを使用
 
 export default function Home() {
     const [location, setLocation] = useState('');
-    const [result, setResult] = useState<any[]>([]); // 観光地のデータを格納する
+    const [result, setResult] = useState<any[]>([]); // 全観光地のリスト
     const [loading, setLoading] = useState(false);
-    const [selectedSpots, setSelectedSpots] = useState<any[]>([]); // 選択された観光地を格納
+    const [selectedSpots, setSelectedSpots] = useState<any[]>([]); // 選択された観光地
     const router = useRouter();
+
+    // 初期化時に localStorage から観光地リストと選択リストを復元
+    useEffect(() => {
+      const savedTouristSpots = localStorage.getItem('touristSpots');
+      if (savedTouristSpots) {
+          setResult(JSON.parse(savedTouristSpots));
+      }
+      
+      // 戻ってきたときに選択リストをクリーンアップ
+      localStorage.removeItem('selectedSpots');
+    }, []);
+  
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -25,7 +37,9 @@ export default function Home() {
 
             const data = await response.json();
             if (data.success) {
-                setResult(JSON.parse(data.data)); // JSONデータをパースしてセット
+                const spots = JSON.parse(data.data);
+                setResult(spots);
+                localStorage.setItem('touristSpots', JSON.stringify(spots)); // 観光地リストを保存
             } else {
                 setResult([]);
             }
@@ -45,8 +59,9 @@ export default function Home() {
     };
 
     const handleComplete = () => {
-        const queryString = encodeURIComponent(JSON.stringify(selectedSpots));
-        router.push(`/selected?spots=${queryString}`);
+        // 選択リストを保存して `selected` ページに移動
+        localStorage.setItem('selectedSpots', JSON.stringify(selectedSpots));
+        router.push(`/selected`);
     };
 
     return (
@@ -79,7 +94,7 @@ export default function Home() {
 
                 {loading ? (
                     <p className="text-center mt-6">検索中...</p>
-                ) : result.length > 0 ? (
+                ) : result && result.length > 0 ? (
                     <div className="mt-8">
                         <h3 className="text-lg font-semibold mb-4">観光地リスト:</h3>
                         <div className="space-y-6">
