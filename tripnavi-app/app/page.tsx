@@ -77,7 +77,7 @@ export default function Home() {
 
     const handleComplete = () => {
         localStorage.setItem('selectedSpots', JSON.stringify(selectedSpots));  // 選択リストも保存
-        router.push(`/selected`);
+        router.push(`/selected`);  // ルート探索ページに遷移
     };
 
     return (
@@ -144,11 +144,21 @@ export default function Home() {
                                 </label>
                             ))}
                         </div>
+
+                        {/* 選択を完了するボタン */}
                         <button
-                            onClick={handleComplete}
                             className="mt-6 w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            onClick={handleComplete}
                         >
-                            完了
+                            選択
+                        </button>
+
+                        {/* ルート探索ページに移動するボタン */}
+                        <button
+                            className="mt-4 w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            onClick={() => router.push(`/route-search`)}
+                        >
+                            ルート探索ページに移動
                         </button>
                     </div>
                 ) : (

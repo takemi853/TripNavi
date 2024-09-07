@@ -1,18 +1,22 @@
+'use client';
+
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { LatLngExpression, LatLngBounds } from 'leaflet';
-import L from 'leaflet';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-// カスタムアイコンの設定
-const customIcon = new L.Icon({
-    iconUrl: '/marker-icon-red.png', // public フォルダのアイコンを参照
-    iconRetinaUrl: '/marker-icon-2x-red.png',
-    shadowUrl: '/marker-shadow.png',
-    iconSize: [25, 41], // デフォルトのサイズ
-    iconAnchor: [12, 41], // アンカー位置（アイコンの底を地図上のマーカー位置に合わせる）
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41], // 影のサイズ
-});
+// 動的に Leaflet をインポートしてアイコンを設定
+const dynamicImportLeaflet = async () => {
+    const L = await import('leaflet');
+    return new L.Icon({
+        iconUrl: '/marker-icon-red.png',
+        iconRetinaUrl: '/marker-icon-2x-red.png',
+        shadowUrl: '/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41],
+    });
+};
 
 interface Spot {
     name: string;
@@ -24,19 +28,16 @@ interface MapComponentProps {
     spots: Spot[];
 }
 
-// 地図の表示範囲を更新するためのコンポーネント
+// 地図の表示範囲を更新するコンポーネント
 const MapBoundsUpdater: React.FC<{ spots: Spot[] }> = ({ spots }) => {
     const map = useMap();
 
     useEffect(() => {
-        if (spots.length > 0) {
-            // 緯度・経度があるスポットのリストを取得
-            const bounds = new LatLngBounds(
-                spots
-                    .filter(spot => spot.latitude !== undefined && spot.longitude !== undefined)
-                    .map(spot => [spot.latitude!, spot.longitude!] as LatLngExpression)
-            );
-            // 地図の表示範囲を全てのスポットが含まれるように設定
+        const validSpots = spots.filter(spot => spot.latitude !== undefined && spot.longitude !== undefined);
+        if (validSpots.length > 0) {
+            const bounds = validSpots.reduce((bounds, spot) => {
+                return bounds.extend([spot.latitude!, spot.longitude!] as LatLngExpression);
+            }, new LatLngBounds([]));
             map.fitBounds(bounds);
         }
     }, [spots, map]);
@@ -45,29 +46,45 @@ const MapBoundsUpdater: React.FC<{ spots: Spot[] }> = ({ spots }) => {
 };
 
 const MapComponent: React.FC<MapComponentProps> = ({ spots }) => {
-    const validSpots = spots.filter(spot => spot.latitude !== undefined && spot.longitude !== undefined);
+    const [customIcon, setCustomIcon] = useState<any>(null);
+
+    useEffect(() => {
+        // クライアントサイドでのみ Leaflet のアイコンをインポート
+        dynamicImportLeaflet().then(setCustomIcon);
+    }, []);
+
+    // 緯度・経度が正しく設定されているスポットのみを有効スポットとして扱う
+    const validSpots = spots.filter(
+        spot => spot.latitude !== undefined && spot.longitude !== undefined && spot.latitude !== null && spot.longitude !== null
+    );
+
+    // 初期位置の設定: 有効なスポットが存在しない場合のためにデフォルト位置を設定
     const initialPosition: LatLngExpression = validSpots.length > 0
         ? [validSpots[0].latitude as number, validSpots[0].longitude as number]
-        : [35.6895, 139.6917]; // デフォルトは東京の位置
+        : [35.6895, 139.6917]; // デフォルト位置: 東京
 
     return (
-        <MapContainer center={initialPosition} zoom={13} style={{ height: '400px', width: '100%' }}>
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {validSpots.map((spot, index) => (
-                <Marker
-                    key={index}
-                    position={[spot.latitude!, spot.longitude!] as LatLngExpression}
-                    icon={customIcon} // カスタムアイコンを使用
-                >
-                    <Popup>{spot.name}</Popup>
-                </Marker>
-            ))}
-            {/* 地図の範囲を自動調整するコンポーネント */}
-            <MapBoundsUpdater spots={validSpots} />
-        </MapContainer>
+        customIcon ? (
+            <MapContainer center={initialPosition} zoom={13} style={{ height: '400px', width: '100%' }}>
+                <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                {validSpots.map((spot, index) => (
+                    <Marker
+                        key={index}
+                        position={[spot.latitude!, spot.longitude!] as LatLngExpression}
+                        icon={customIcon}
+                    >
+                        <Popup>{spot.name}</Popup>
+                    </Marker>
+                ))}
+                {/* 地図の範囲を自動的に更新するコンポーネント */}
+                <MapBoundsUpdater spots={validSpots} />
+            </MapContainer>
+        ) : (
+            <p>Loading map...</p> // アイコンがロードされるまでの代替コンテンツ
+        )
     );
 };
 

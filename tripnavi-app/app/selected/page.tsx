@@ -1,26 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import MapComponent from '../../components/MapComponent'; // 地図コンポーネントをインポート
+
+// 動的に `MapComponent` をインポートし、SSR を無効化
+const MapComponent = dynamic(() => import('../../components/MapComponent'), {
+    ssr: false,  // サーバーサイドレンダリングを無効化
+});
 
 interface Spot {
     name: string;
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
     description: string;
     tags: string[];
 }
 
 export default function SelectedSpots() {
-    const [selectedSpots, setSelectedSpots] = useState<Spot[]>([]); // 選択された観光地リスト
+    const [selectedSpots, setSelectedSpots] = useState<Spot[]>([]);
     const router = useRouter();
 
-    // ページロード時にlocalStorageから選択された観光地を復元
     useEffect(() => {
         const savedSelectedSpots = localStorage.getItem('selectedSpots');
         if (savedSelectedSpots) {
-            setSelectedSpots(JSON.parse(savedSelectedSpots)); // 選択リストを復元
+            setSelectedSpots(JSON.parse(savedSelectedSpots));
         }
     }, []);
 
@@ -35,7 +39,8 @@ export default function SelectedSpots() {
 
                 {selectedSpots && selectedSpots.length > 0 ? (
                     <>
-                        <MapComponent spots={selectedSpots} /> {/* 地図コンポーネントを追加 */}
+                        {/* 動的にロードされた地図コンポーネントをここで使用 */}
+                        <MapComponent spots={selectedSpots} />
                         <div className="space-y-6 mt-6">
                             {selectedSpots.map((spot, index) => (
                                 <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">

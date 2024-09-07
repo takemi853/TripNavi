@@ -5,7 +5,7 @@ export async function getCoordinates(placeName: string) {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(placeName)}`;
     try {
         console.log(`Fetching coordinates for: ${placeName}`); // デバッグ用ログ
-        const response = await axios.get(url);
+        const response = await axios.get<any[]>(url);
         const data = response.data;
 
         console.log(`API response for ${placeName}:`, data); // APIからのレスポンスをログに出力
