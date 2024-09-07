@@ -17,6 +17,7 @@ export default function Home() {
       if (savedTouristSpots) {
           setResult(JSON.parse(savedTouristSpots));
       }
+      
       // 戻ってきたときに選択リストをクリーンアップ
       localStorage.removeItem('selectedSpots');
     }, []);
@@ -64,21 +65,19 @@ export default function Home() {
           setLoading(false);
       }
   };
+  
 
     const handleCheck = (spot: any) => {
         if (selectedSpots.includes(spot)) {
-            const updatedSpots = selectedSpots.filter(s => s !== spot);  // すでに選択されていたら削除
-            setSelectedSpots(updatedSpots);
-            localStorage.setItem('selectedSpots', JSON.stringify(updatedSpots));  // 選択リストを更新
+            setSelectedSpots(selectedSpots.filter(s => s !== spot));  // すでに選択されていたら削除
         } else {
-            const updatedSpots = [...selectedSpots, spot];  // 新たに選択
-            setSelectedSpots(updatedSpots);
-            localStorage.setItem('selectedSpots', JSON.stringify(updatedSpots));  // 選択リストを更新
+            setSelectedSpots([...selectedSpots, spot]);  // 新たに選択
         }
     };
 
     const handleComplete = () => {
-        router.push(`/selected`);  // selected ページに遷移
+        localStorage.setItem('selectedSpots', JSON.stringify(selectedSpots));  // 選択リストも保存
+        router.push(`/selected`);  // ルート探索ページに遷移
     };
 
     return (
@@ -146,7 +145,7 @@ export default function Home() {
                             ))}
                         </div>
 
-                        {/* 観光地選択を完了して selected ページに移動するボタン */}
+                        {/* 選択を完了するボタン */}
                         <button
                             className="mt-6 w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             onClick={handleComplete}
@@ -154,7 +153,7 @@ export default function Home() {
                             選択
                         </button>
 
-                        {/* ルート探索ページに直接移動するボタン */}
+                        {/* ルート探索ページに移動するボタン */}
                         <button
                             className="mt-4 w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             onClick={() => router.push(`/route-search`)}
