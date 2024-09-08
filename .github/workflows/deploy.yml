@@ -67,7 +67,7 @@ jobs:
           username: ${{ secrets.CONOHA_USER }}
           port: ${{ secrets.CONOHA_PORT }}
           key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
-          debug: true
+          # debug: true
           script: |
             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
             mkdir -p ./tripnavi-app/app
