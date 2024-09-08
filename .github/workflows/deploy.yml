@@ -48,13 +48,7 @@ jobs:
       - name: Verify build output
         run: |
           ls -a ./tripnavi-app/.next/
-
-      - name: Enable debug logging
-        run: |
-          echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
-          echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV
-          echo "RUNNER_DEBUG=true" >> $GITHUB_ENV
-
+          
       - name: Deploy to ConoHa Wing
         uses: appleboy/ssh-action@v0.1.3
         with:
