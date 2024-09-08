@@ -48,13 +48,14 @@ jobs:
       - name: Verify build output
         run: |
           ls -a ./tripnavi-app/.next/
-          
+
       - name: Deploy to ConoHa Wing
         uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{ secrets.CONOHA_HOST }}
           username: ${{ secrets.CONOHA_USER }}
-          port: ${{ secrets.CONOHA_PORT }}
+          # port: ${{ secrets.CONOHA_PORT }}
+          port 8022
           key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
           script: |
             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
