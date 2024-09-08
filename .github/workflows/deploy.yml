@@ -59,7 +59,7 @@ jobs:
           script: |
             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
             mkdir -p ./tripnavi-app/app
-            scp -r ./tripnavi-app/.next/* ./tripnavi-app/app/  # ビルドされたファイルを転送
+            # scp -r ./tripnavi-app/.next/* ./tripnavi-app/app/  # ビルドされたファイルを転送
             scp -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
             # NginxまたはApacheの再起動、または他の設定
             # sudo systemctl restart nginx  # 例: Nginxを使う場合
