@@ -71,4 +71,5 @@ jobs:
           script: |
             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
             mkdir -p ./tripnavi-app/app
-            scp -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
+            scp -P ${{ secrets.CONOHA_PORT }} -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
+            # scp -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
