@@ -57,4 +57,4 @@ jobs:
             mkdir -p ./tripnavi-app/app
             scp -r ./.next/* ./tripnavi-app/app/  # ビルドされたファイルを転送
             # NginxまたはApacheの再起動、または他の設定
-            sudo systemctl restart nginx  # 例: Nginxを使う場合
+            # sudo systemctl restart nginx  # 例: Nginxを使う場合
