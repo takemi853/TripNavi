@@ -51,7 +51,7 @@ jobs:
           host: ${{ secrets.CONOHA_HOST }}
           username: ${{ secrets.CONOHA_USER }}
           port: ${{ secrets.CONOHA_PORT }}
-          key: ${{ secrets.CONOHA_KEY }}
+          key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
           script: |
             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
             mkdir -p ./tripnavi-app/app
