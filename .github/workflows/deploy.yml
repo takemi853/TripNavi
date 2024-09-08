@@ -49,24 +49,23 @@ jobs:
         run: |
           ls -a ./tripnavi-app/.next/
 
-      - name: Test SSH connection
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.CONOHA_HOST }}
-          username: ${{ secrets.CONOHA_USER }}
-          port: ${{ secrets.CONOHA_PORT }}
-          key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}
-          script: |
-            echo "SSH connection successful!"
-          debug: true
+      # - name: Test SSH connection
+      #   uses: appleboy/ssh-action@v0.1.5
+      #   with:
+      #     host: ${{ secrets.CONOHA_HOST }}
+      #     username: ${{ secrets.CONOHA_USER }}
+      #     port: ${{ secrets.CONOHA_PORT }}
+      #     key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}
+      #     script: |
+      #       echo "SSH connection successful!"
+      #     debug: true
 
       - name: Deploy to ConoHa Wing
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.CONOHA_HOST }}
           username: ${{ secrets.CONOHA_USER }}
-          # port: ${{ secrets.CONOHA_PORT }}
-          port: 8022
+          port: ${{ secrets.CONOHA_PORT }}
           key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
           debug: true
           script: |
