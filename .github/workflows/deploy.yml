@@ -34,6 +34,10 @@ jobs:
           name: build
           path: ./tripnavi-app/build/
 
+      - name: Verify build directory contents
+        run: |
+          ls ./tripnavi-app/build/
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
