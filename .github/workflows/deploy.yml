@@ -54,7 +54,7 @@ jobs:
         with:
           host: ${{ secrets.CONOHA_HOST }}
           username: ${{ secrets.CONOHA_USER }}
-          port: 8022
+          port: ${{ secrets.CONOHA_PORT }}
           key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}
           script: |
             echo "SSH connection successful!"
