@@ -57,8 +57,8 @@ jobs:
           # port: ${{ secrets.CONOHA_PORT }}
           port: 8022
           key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
+          debug: true
           script: |
             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
             mkdir -p ./tripnavi-app/app
             scp -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
-          debug: true
