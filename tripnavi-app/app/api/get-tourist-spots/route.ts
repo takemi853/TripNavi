@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
             prompt = `緯度${lat}、経度${lon}の周辺にある有名な観光地のリストを作成してください。各観光地の名前、簡単な説明、そしてその場所がどのような人におすすめかをタグとして日本語で提供してください。\
                         json形式: [ { "name": "観光地の名前", "description": "観光地の簡単な説明", "tags": ["おすすめの人のタグ", "複数のタグがある場合はカンマで区切る"] } ]」`;
         } else if (location) {
-            prompt = `場所「${location}」周辺にある有名な観光地のリストを、以下の形式で返してください。各観光地に対して名前、簡単な説明、そしてその場所がどのような人におすすめかをタグとして日本語で提供してください。 \
+            prompt = `場所「${location}」周辺にある有名な観光地のリストを、以下の形式で返してください。各観光地に対して名前、簡単な説明、そしてその場所がどのような人におすすめかをタグとして提供してください。 \
                         json形式: [ { "name": "観光地の名前", "description": "観光地の簡単な説明", "tags": ["おすすめの人のタグ", "複数のタグがある場合はカンマで区切る"] } ]」`;
         } else {
             return NextResponse.json({ success: false, message: '有効な入力がありません' }, { status: 400 });
@@ -64,13 +64,13 @@ export async function POST(request: NextRequest) {
         console.log("観光地リスト:", touristSpots);
         return NextResponse.json({ success: true, data: touristSpots }, { status: 200 });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         // エラーメッセージの詳細を取得
-        console.error("エラー詳細:", error.message);
+        console.error("エラー詳細:", (error as Error).message);
 
         // エラーがAPIリクエストの失敗によるものかをチェック
-        if (error instanceof Error && 'response' in error) {
-            console.error("APIリクエストエラー:", (error as any).response?.data || error.message);
+        if (error instanceof Error && error.hasOwnProperty('response')) {
+            // console.error("APIリクエストエラー:", (error as any).response?.data || error.message);
             return NextResponse.json({ success: false, message: 'OpenAI APIへのリクエストに失敗しました' }, { status: 500 });
         }
 

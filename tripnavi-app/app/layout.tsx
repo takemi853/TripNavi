@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -24,9 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ja">
+    <html lang="ja" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="bg-gray-100 text-gray-800">{children}</body>
     </html>
   );
 }
-

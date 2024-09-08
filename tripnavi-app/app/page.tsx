@@ -4,11 +4,20 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCoordinates } from '../helpers/getCoordinates';  // ヘルパーファイルをインポート
 
+// 観光地のデータ型を定義
+interface TouristSpot {
+    id: number;
+    name: string;
+    description: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  }
+
 export default function Home() {
     const [location, setLocation] = useState('');
-    const [result, setResult] = useState<any[]>([]);  // 観光地のデータを格納する
+    const [result, setResult] = useState<TouristSpot[]>([]);  // 観光地のデータを格納
     const [loading, setLoading] = useState(false);
-    const [selectedSpots, setSelectedSpots] = useState<any[]>([]);  // 選択された観光地を格納
+    const [selectedSpots, setSelectedSpots] = useState<TouristSpot[]>([]);  // 選択された観光地
     const router = useRouter();
 
     // 初期化時に localStorage から観光地リストと選択リストを復元
@@ -40,16 +49,19 @@ export default function Home() {
               console.log("Fetched tourist spots:", spots); // 取得した観光地のリストをログに出力
   
               // 各観光地の緯度・経度を取得し、リストに追加
-              const spotsWithCoordinates = await Promise.all(spots.map(async (spot: any) => {
-                  const coordinates = await getCoordinates(spot.name);
-                  const updatedSpot = {
-                      ...spot,
-                      latitude: coordinates ? coordinates.latitude : null,
-                      longitude: coordinates ? coordinates.longitude : null,
-                  };
-                  console.log(`Updated spot with coordinates:`, updatedSpot); // 更新後の観光地情報をログに出力
-                  return updatedSpot;
-              }));
+              const spotsWithCoordinates = await Promise.all(spots.map(async (spot: TouristSpot) => {
+                const coordinates = await getCoordinates(spot.name);
+                
+                // 緯度・経度が取得できない場合はnullを設定
+                const updatedSpot: TouristSpot = {
+                    ...spot,
+                    latitude: coordinates ? coordinates.latitude : null,
+                    longitude: coordinates ? coordinates.longitude : null,
+                };
+            
+                console.log(`Updated spot with coordinates:`, updatedSpot); // 更新後の観光地情報をログに出力
+                return updatedSpot;
+            }));
               
               setResult(spotsWithCoordinates);
               localStorage.setItem('touristSpots', JSON.stringify(spotsWithCoordinates)); // 緯度・経度付きの観光地リストを保存
@@ -65,7 +77,7 @@ export default function Home() {
       }
   };
 
-    const handleCheck = (spot: any) => {
+    const handleCheck = (spot: TouristSpot) => {
         if (selectedSpots.includes(spot)) {
             const updatedSpots = selectedSpots.filter(s => s !== spot);  // すでに選択されていたら削除
             setSelectedSpots(updatedSpots);
@@ -76,7 +88,7 @@ export default function Home() {
             localStorage.setItem('selectedSpots', JSON.stringify(updatedSpots));  // 選択リストを更新
         }
     };
-
+    
     const handleComplete = () => {
         router.push(`/selected`);  // selected ページに遷移
     };

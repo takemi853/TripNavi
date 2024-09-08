@@ -1,11 +1,11 @@
 'use client';
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { LatLngExpression, LatLngBounds } from 'leaflet';
+import { LatLngExpression, LatLngBounds, Icon } from 'leaflet';
 import { useEffect, useState } from 'react';
 
 // 動的に Leaflet をインポートしてアイコンを設定
-const dynamicImportLeaflet = async () => {
+const dynamicImportLeaflet = async (): Promise<Icon> => {
     const L = await import('leaflet');
     return new L.Icon({
         iconUrl: '/marker-icon-red.png',
@@ -46,7 +46,7 @@ const MapBoundsUpdater: React.FC<{ spots: Spot[] }> = ({ spots }) => {
 };
 
 const MapComponent: React.FC<MapComponentProps> = ({ spots }) => {
-    const [customIcon, setCustomIcon] = useState<any>(null);
+    const [customIcon, setCustomIcon] = useState<Icon | null>(null); // LeafletのIcon型を指定
 
     useEffect(() => {
         // クライアントサイドでのみ Leaflet のアイコンをインポート
@@ -60,7 +60,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ spots }) => {
 
     // 初期位置の設定: 有効なスポットが存在しない場合のためにデフォルト位置を設定
     const initialPosition: LatLngExpression = validSpots.length > 0
-        ? [validSpots[0].latitude as number, validSpots[0].longitude as number]
+        ? [validSpots[0].latitude!, validSpots[0].longitude!] // 型安全にするため、事前にチェック
         : [35.6895, 139.6917]; // デフォルト位置: 東京
 
     return (
