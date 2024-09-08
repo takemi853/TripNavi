@@ -49,7 +49,6 @@ jobs:
         run: |
           ls -a ./tripnavi-app/.next/
 
-    steps:
       - name: Enable debug logging
         run: |
           echo "GITHUB_ACTIONS=true" >> $GITHUB_ENV
@@ -68,4 +67,3 @@ jobs:
             mkdir -p ./tripnavi-app/app
             scp -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
           debug: true
-          
