@@ -68,3 +68,4 @@ jobs:
             mkdir -p ./tripnavi-app/app
             scp -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
           debug: true
+          
