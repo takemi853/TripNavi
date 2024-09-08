@@ -18,20 +18,21 @@ jobs:
         with:
           node-version: '22.7.0'  # Node.jsのバージョン
 
-      - name: Change directory
-        run: cd ./tripnavi-app
-
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd ./tripnavi-app
+          npm install
 
       - name: Build the React app
-        run: npm run build
+        run: |
+          cd ./tripnavi-app
+          npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build
-          path: build/
+          path: ./tripnavi-app/build/
 
   deploy:
     runs-on: ubuntu-latest
