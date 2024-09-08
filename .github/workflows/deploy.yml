@@ -60,24 +60,24 @@ jobs:
       #       echo "SSH connection successful!"
       #     debug: true
 
-      - name: push with scp
-        run: scp -r -o StrictHostKeyChecking=no -P $port -i $key ./tripnavi-app/.next/* $username@$host:/tripnavi-app/app/
-        env:
-          host: ${{ secrets.CONOHA_HOST }}
-          username: ${{ secrets.CONOHA_USER }}
-          port: ${{ secrets.CONOHA_PORT }}
-          key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
-
-      # - name: Deploy to ConoHa Wing
-      #   uses: appleboy/ssh-action@v0.1.5
-      #   with:
+      # - name: push with scp
+      #   run: scp -r -o StrictHostKeyChecking=no -P $port -i $key ./tripnavi-app/.next/* $username@$host:/tripnavi-app/app/
+      #   env:
       #     host: ${{ secrets.CONOHA_HOST }}
       #     username: ${{ secrets.CONOHA_USER }}
       #     port: ${{ secrets.CONOHA_PORT }}
       #     key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
-      #     debug: true
-      #     script: |
-      #       rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
-      #       mkdir -p ./tripnavi-app/app
-      #       scp -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
+
+      - name: Deploy to ConoHa Wing
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.CONOHA_HOST }}
+          username: ${{ secrets.CONOHA_USER }}
+          port: ${{ secrets.CONOHA_PORT }}
+          key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
+          debug: true
+          script: |
+            rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
+            mkdir -p ./tripnavi-app/app
+            scp -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -i ${{ secrets.CONOHA_SSH_PRIVATE_KEY}} -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
 
