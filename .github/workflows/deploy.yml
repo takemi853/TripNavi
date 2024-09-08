@@ -67,6 +67,10 @@ jobs:
       #     username: ${{ secrets.CONOHA_USER }}
       #     port: ${{ secrets.CONOHA_PORT }}
       #     key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
+      - name: Save SSH key
+        run: |
+          echo "${{ secrets.SSH_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
 
       - name: Deploy to ConoHa Wing
         uses: appleboy/ssh-action@v0.1.5
@@ -79,5 +83,5 @@ jobs:
           script: |
             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
             mkdir -p ./tripnavi-app/app
-            scp -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -i ${{ secrets.CONOHA_SSH_PRIVATE_KEY}} -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
+            scp -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -i /tmp/ssh_key -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
 
