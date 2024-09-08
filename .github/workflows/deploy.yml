@@ -36,7 +36,7 @@ jobs:
 
       - name: Verify build directory contents
         run: |
-          ls ./tripnavi-app
+          ls -a ./tripnavi-app
 
   deploy:
     runs-on: ubuntu-latest
