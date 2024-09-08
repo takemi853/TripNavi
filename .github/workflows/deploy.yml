@@ -58,3 +58,4 @@ jobs:
             scp -r ./build/* ./tripnavi-app/app/  # ビルドされたファイルを転送
             # NginxまたはApacheの再起動、または他の設定
             sudo systemctl restart nginx  # 例: Nginxを使う場合
+
