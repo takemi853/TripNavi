@@ -45,6 +45,10 @@ jobs:
           name: build
           path: ./tripnavi-app/.next/
 
+      - name: Verify build output
+        run: |
+          ls -a ./tripnavi-app/
+
       - name: Deploy to ConoHa Wing
         uses: appleboy/ssh-action@v0.1.3
         with:
