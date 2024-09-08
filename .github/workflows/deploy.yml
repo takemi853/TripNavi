@@ -72,4 +72,4 @@ jobs:
           script: |
             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
             mkdir -p ./tripnavi-app/app
-            scp -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
+            scp -P 8022 -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
