@@ -1,0 +1,17 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "pages/api/**/*",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "pages/**/*",
+        "use": "@vercel/next"
+      }
+    ],
+    "routes": [
+      { "src": "/api/(.*)", "dest": "/api/$1" }
+    ]
+  }
+  
