@@ -79,7 +79,6 @@ jobs:
         run: |
           scp -vvv -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -i /tmp/ssh_key -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/
 
-
       - name: Deploy to ConoHa Wing
         uses: appleboy/ssh-action@v0.1.5
         with:
