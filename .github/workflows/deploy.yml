@@ -1,94 +1,94 @@
-# name: Deploy to ConoHa Wing
+name: Deploy to ConoHa Wing
 
-# on:
-#   push:
-#     branches:
-#       - main  # 'main'ブランチへのプッシュ時にデプロイを実行
+on:
+  push:
+    branches:
+      - main  # 'main'ブランチへのプッシュ時にデプロイを実行
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v2
-#         with:
-#           node-version: '22.7.0'  # Node.jsのバージョン
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '22.7.0'  # Node.jsのバージョン
 
-#       - name: Install dependencies
-#         run: |
-#           cd ./tripnavi-app
-#           npm install
+      - name: Install dependencies
+        run: |
+          cd ./tripnavi-app
+          npm install
 
-#       - name: Build the React app
-#         run: |
-#           cd ./tripnavi-app
-#           npm run build
+      - name: Build the React app
+        run: |
+          cd ./tripnavi-app
+          npm run build
 
-#       - name: Upload build artifacts
-#         uses: actions/upload-artifact@v2
-#         with:
-#           name: build
-#           path: ./tripnavi-app/.next/
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: ./tripnavi-app/.next/
 
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: build
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
 
-#     steps:
-#       - name: Download build artifacts
-#         uses: actions/download-artifact@v2
-#         with:
-#           name: build
-#           path: ./tripnavi-app/.next/
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+          path: ./tripnavi-app/.next/
 
-#       - name: Verify build output
-#         run: |
-#           ls -a ./tripnavi-app/.next/
+      - name: Verify build output
+        run: |
+          ls -a ./tripnavi-app/.next/
 
-#       # - name: Test SSH connection
-#       #   uses: appleboy/ssh-action@v0.1.5
-#       #   with:
-#       #     host: ${{ secrets.CONOHA_HOST }}
-#       #     username: ${{ secrets.CONOHA_USER }}
-#       #     port: ${{ secrets.CONOHA_PORT }}
-#       #     key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}
-#       #     script: |
-#       #       echo "SSH connection successful!"
-#       #     debug: true
+      # - name: Test SSH connection
+      #   uses: appleboy/ssh-action@v0.1.5
+      #   with:
+      #     host: ${{ secrets.CONOHA_HOST }}
+      #     username: ${{ secrets.CONOHA_USER }}
+      #     port: ${{ secrets.CONOHA_PORT }}
+      #     key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}
+      #     script: |
+      #       echo "SSH connection successful!"
+      #     debug: true
 
-#       # - name: push with scp
-#       #   run: scp -r -o StrictHostKeyChecking=no -P $port -i $key ./tripnavi-app/.next/* $username@$host:/tripnavi-app/app/
-#       #   env:
-#       #     host: ${{ secrets.CONOHA_HOST }}
-#       #     username: ${{ secrets.CONOHA_USER }}
-#       #     port: ${{ secrets.CONOHA_PORT }}
-#       #     key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
-#       - name: Save SSH key
-#         run: |
-#           echo "${{ secrets.CONOHA_SSH_PRIVATE_KEY }}" > /tmp/ssh_key
-#           chmod 600 /tmp/ssh_key
+      # - name: push with scp
+      #   run: scp -r -o StrictHostKeyChecking=no -P $port -i $key ./tripnavi-app/.next/* $username@$host:/tripnavi-app/app/
+      #   env:
+      #     host: ${{ secrets.CONOHA_HOST }}
+      #     username: ${{ secrets.CONOHA_USER }}
+      #     port: ${{ secrets.CONOHA_PORT }}
+      #     key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
+      - name: Save SSH key
+        run: |
+          echo "${{ secrets.CONOHA_SSH_PRIVATE_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
 
-#       - name: Check SSH key existence
-#         run: ls -la /tmp/ssh_key
+      - name: Check SSH key existence
+        run: ls -la /tmp/ssh_key
         
-#       - name: Deploy with SCP (debug mode)
-#         run: |
-#           scp -vvv -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -i /tmp/ssh_key -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/
+      - name: Deploy with SCP (debug mode)
+        run: |
+          scp -vvv -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -i /tmp/ssh_key -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/
 
-#       - name: Deploy to ConoHa Wing
-#         uses: appleboy/ssh-action@v0.1.5
-#         with:
-#           host: ${{ secrets.CONOHA_HOST }}
-#           username: ${{ secrets.CONOHA_USER }}
-#           port: ${{ secrets.CONOHA_PORT }}
-#           key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
-#           # debug: true
-#           script: |
-#             rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
-#             mkdir -p ./tripnavi-app/app
-#             scp -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -i /tmp/ssh_key -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
+      - name: Deploy to ConoHa Wing
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.CONOHA_HOST }}
+          username: ${{ secrets.CONOHA_USER }}
+          port: ${{ secrets.CONOHA_PORT }}
+          key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
+          # debug: true
+          script: |
+            rm -rf ./tripnavi-app/app/*  # デプロイ先ディレクトリをクリア
+            mkdir -p ./tripnavi-app/app
+            scp -P ${{ secrets.CONOHA_PORT }} -o StrictHostKeyChecking=no -i /tmp/ssh_key -r ./tripnavi-app/.next/* ${{ secrets.CONOHA_USER }}@${{ secrets.CONOHA_HOST }}:/tripnavi-app/app/  # ビルドされたファイルを転送
 
