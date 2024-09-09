@@ -72,6 +72,10 @@ jobs:
           echo "${{ secrets.CONOHA_SSH_PRIVATE_KEY }}" > /tmp/ssh_key
           chmod 600 /tmp/ssh_key
 
+      - name: Check SSH key existence
+        run: ls -la /tmp/ssh_key
+        
+
       - name: Deploy to ConoHa Wing
         uses: appleboy/ssh-action@v0.1.5
         with:
