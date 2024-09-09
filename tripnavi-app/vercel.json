@@ -2,11 +2,11 @@
     "version": 2,
     "builds": [
       {
-        "src": "pages/api/**/*",
+        "src": "app/api/**/*",
         "use": "@vercel/node"
       },
       {
-        "src": "pages/**/*",
+        "src": "app/**/*",
         "use": "@vercel/next"
       }
     ],
