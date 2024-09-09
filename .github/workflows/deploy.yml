@@ -69,7 +69,7 @@ jobs:
       #     key: ${{ secrets.CONOHA_SSH_PRIVATE_KEY }}  # SSH秘密鍵
       - name: Save SSH key
         run: |
-          echo "${{ secrets.SSH_KEY }}" > /tmp/ssh_key
+          echo "${{ secrets.CONOHA_SSH_PRIVATE_KEY }}" > /tmp/ssh_key
           chmod 600 /tmp/ssh_key
 
       - name: Deploy to ConoHa Wing
