@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
             request: { lat: lat || null, lon: lon || null, location: location || null },
             response: { success: false, message: 'APIリクエストエラー' },
             timestamp: new Date()
-        });        
+        });
         await log.save();
 
         // エラーがAPIリクエストの失敗によるものかをチェック
