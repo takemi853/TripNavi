@@ -20,6 +20,7 @@ const connectDB = async () => {
 export async function POST(request: NextRequest) {
     console.log("APIリクエストを受け取りました");
     await connectDB();  // データベースに接続
+    console.log("データベースに接続しました");
 
     try {
         const { lat, lon, location } = await request.json();
