@@ -5,7 +5,7 @@ import { LogModel } from '../../../models/log';  // モデルのインポート
 
 // MongoDBへの接続
 const connectDB = async () => {
-    console.log("MongoDBの接続状態:", mongoose.connection.readyState);
+    // console.log("MongoDBの接続状態:", mongoose.connection.readyState);
     if (mongoose.connection.readyState === 0) {
         try {
             await mongoose.connect(process.env.MONGO_URI);
@@ -23,7 +23,6 @@ const connectDB = async () => {
 export async function POST(request: NextRequest) {
     console.log("APIリクエストを受け取りました");
     await connectDB();  // データベースに接続
-    console
 
     try {
         const { lat, lon, location } = await request.json();
