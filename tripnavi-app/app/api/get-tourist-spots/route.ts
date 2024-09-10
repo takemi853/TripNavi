@@ -5,14 +5,17 @@ import { LogModel } from '../../../models/log';  // モデルのインポート
 
 // MongoDBへの接続
 const connectDB = async () => {
+    console.log("MongoDBの接続状態:", mongoose.connection.readyState);
     if (mongoose.connection.readyState === 0) {
         try {
-            await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mydatabase');
+            await mongoose.connect(process.env.MONGO_URI);
             console.log("MongoDBに接続しました");
         } catch (error) {
             console.error("MongoDB接続エラー:", error);
             throw new Error("データベース接続に失敗しました");
         }
+    } else {
+        console.log("既にMongoDBに接続されています");
     }
 };
 
@@ -20,7 +23,7 @@ const connectDB = async () => {
 export async function POST(request: NextRequest) {
     console.log("APIリクエストを受け取りました");
     await connectDB();  // データベースに接続
-    console.log("データベースに接続しました");
+    console
 
     try {
         const { lat, lon, location } = await request.json();
