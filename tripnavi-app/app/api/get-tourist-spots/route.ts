@@ -1,8 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
+import mongoose from 'mongoose';
+import { LogModel } from '../../../models/log';  // モデルのインポート
+
+// MongoDBへの接続
+const connectDB = async () => {
+    if (mongoose.connection.readyState === 0) {
+        try {
+            await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mydatabase');
+            console.log("MongoDBに接続しました");
+        } catch (error) {
+            console.error("MongoDB接続エラー:", error);
+            throw new Error("データベース接続に失敗しました");
+        }
+    }
+};
+
 
 export async function POST(request: NextRequest) {
     console.log("APIリクエストを受け取りました");
+    await connectDB();  // データベースに接続
 
     try {
         const { lat, lon, location } = await request.json();
@@ -61,12 +78,25 @@ export async function POST(request: NextRequest) {
         console.log("OpenAI APIレスポンス:", response.data);
 
         const touristSpots = response.data.choices[0].message.content;
+        // リクエストとレスポンスをデータベースに保存
+        const log = new LogModel({
+            request: { lat, lon, location },
+            response: { success: true, data: touristSpots },
+            timestamp: new Date()
+        });
+        await log.save();
         console.log("観光地リスト:", touristSpots);
         return NextResponse.json({ success: true, data: touristSpots }, { status: 200 });
 
     } catch (error: unknown) {
         // エラーメッセージの詳細を取得
         console.error("エラー詳細:", (error as Error).message);
+        const log = new LogModel({
+            request: { lat, lon, location },
+            response: { success: false, message: 'APIリクエストエラー' },
+            timestamp: new Date()
+        });
+        await log.save();
 
         // エラーがAPIリクエストの失敗によるものかをチェック
         if (error instanceof Error && error.hasOwnProperty('response')) {
