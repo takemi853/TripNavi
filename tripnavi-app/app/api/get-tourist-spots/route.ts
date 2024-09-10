@@ -8,7 +8,7 @@ const connectDB = async () => {
     // console.log("MongoDBの接続状態:", mongoose.connection.readyState);
     if (mongoose.connection.readyState === 0) {
         try {
-            await mongoose.connect(process.env.MONGO_URI);
+            await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mydatabase');
             console.log("MongoDBに接続しました");
         } catch (error) {
             console.error("MongoDB接続エラー:", error);
