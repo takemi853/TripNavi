@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         const touristSpots = response.data.choices[0].message.content;
         // リクエストとレスポンスをデータベースに保存
         const log = new LogModel({
-            request: { lat, lon, location },
+            request: { lat: lat || null, lon: lon || null, location: location || null },  
             response: { success: true, data: touristSpots },
             timestamp: new Date()
         });
@@ -91,11 +91,12 @@ export async function POST(request: NextRequest) {
     } catch (error: unknown) {
         // エラーメッセージの詳細を取得
         console.error("エラー詳細:", (error as Error).message);
+        const { lat, lon, location } = await request.json().catch(() => ({}));
         const log = new LogModel({
-            request: { lat, lon, location },
+            request: { lat: lat || null, lon: lon || null, location: location || null },
             response: { success: false, message: 'APIリクエストエラー' },
             timestamp: new Date()
-        });
+        });        
         await log.save();
 
         // エラーがAPIリクエストの失敗によるものかをチェック
