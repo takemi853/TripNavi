@@ -79,3 +79,4 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, message: '観光地の取得に失敗しました' }, { status: 500 });
     }
 }
+
