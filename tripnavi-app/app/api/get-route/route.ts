@@ -22,14 +22,14 @@ export async function POST(request: NextRequest) {
               "destination": "観光地名",
               "transport": "交通手段（車、電車、バス、徒歩など）",
               "distance": "次の目的地までの距離（km）",
-              "time_required": "次の目的地までの所要時間（時間または分）",
-              "stay_duration": "この場所での滞在時間（時間または分）"
+              "time_required": "次の目的地までの所要時間（分）",
+              "stay_duration": "この場所での滞在時間（分）"
             }
             // その他の観光地の情報も同様に追加
           ],
           "end": "到着地点名",
           "total_distance": "全体の移動距離（km）",
-          "total_time": "全体の移動時間（時間または分）"
+          "total_time": "全体の移動時間（分）"
         }`;
         
         interface ChatGPTResponse {
