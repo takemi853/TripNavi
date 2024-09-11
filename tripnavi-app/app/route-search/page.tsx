@@ -5,28 +5,24 @@ import { useState } from 'react';
 const RouteSearch = () => {
     const [locations, setLocations] = useState<string[]>(['']);
     const [loading, setLoading] = useState(false);
-    const [routeResult, setRouteResult] = useState<string | null>(null);
+    const [routeResult, setRouteResult] = useState<any | null>(null);
 
-    // 観光場所を追加
     const addLocation = () => {
         setLocations([...locations, '']);
     };
 
-    // 観光場所を削除
     const removeLocation = (index: number) => {
         const newLocations = [...locations];
         newLocations.splice(index, 1);
         setLocations(newLocations);
     };
 
-    // 各観光場所の入力値を更新
     const updateLocation = (index: number, value: string) => {
         const newLocations = [...locations];
         newLocations[index] = value;
         setLocations(newLocations);
     };
 
-    // フォームの送信時に ChatGPT API を呼び出してルートを取得
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setLoading(true);
@@ -41,8 +37,10 @@ const RouteSearch = () => {
             });
 
             const data = await response.json();
+            console.log('APIからのレスポンス:', data);  // APIレスポンスを確認
             if (data.success) {
-                setRouteResult(data.route);
+                const parsedRoute = JSON.parse(data.route);
+                setRouteResult(parsedRoute);
             } else {
                 setRouteResult('ルートの取得に失敗しました。');
             }
@@ -93,15 +91,31 @@ const RouteSearch = () => {
                         {loading ? '検索中...' : 'ルート検索'}
                     </button>
                 </form>
-
                 {loading ? (
                     <p className="text-center mt-4">検索中...</p>
                 ) : (
-                    routeResult && (
+                    routeResult && routeResult.route && Array.isArray(routeResult.route) && routeResult.route.length > 0 ? (
                         <div className="mt-6 bg-gray-100 p-4 rounded-md shadow">
                             <h3 className="text-lg font-semibold">提案されたルート:</h3>
-                            <p>{routeResult}</p>
+                            {routeResult.route.map((stop: any, index: number) => (
+                                <div key={index} className="bg-white p-4 rounded-lg shadow-sm">
+                                    <h4 className="font-semibold text-blue-600">{index + 1}. {stop.destination}</h4>
+                                    <p>交通手段: {stop.transport}</p>
+                                    <p>距離: {stop.distance}</p>
+                                    <p>所要時間: {stop.time_required}</p>
+                                    <p>滞在時間: {stop.stay_duration} </p>
+                                </div>
+                            ))}
+                            <div>
+                                <p className="font-bold">到着地点: {routeResult.end}</p>
+                            </div>
+                            <div className="mt-4">
+                                <p className="font-bold">全体の移動距離: {routeResult.total_distance}</p>
+                                <p className="font-bold">全体の移動時間: {routeResult.total_time}</p>
+                            </div>
                         </div>
+                    ) : (
+                        routeResult && <p className="text-center mt-4">ルートが見つかりませんでした。</p>
                     )
                 )}
             </div>
