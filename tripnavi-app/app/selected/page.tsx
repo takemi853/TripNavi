@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import qs from 'query-string';
 
 // 動的に `MapComponent` をインポートし、SSR を無効化
 const MapComponent = dynamic(() => import('../../components/MapComponent'), {
@@ -32,6 +33,15 @@ export default function SelectedSpots() {
         router.push('/');
     };
 
+    // ルート検索ページに遷移する際に選択された観光地をパラメータとして渡す
+    const handleRouteSearch = () => {
+        const query = {
+            spots: JSON.stringify(selectedSpots),
+        };
+        const url = qs.stringifyUrl({ url: '/route-search', query });
+        router.push(url);
+    };
+
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-green-200 to-blue-300">
             <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
@@ -59,6 +69,12 @@ export default function SelectedSpots() {
                                 </div>
                             ))}
                         </div>
+                        <button
+                            onClick={handleRouteSearch}
+                            className="mt-4 w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            ルート検索
+                        </button>
                     </>
                 ) : (
                     <p className="text-center mt-6">選択された観光地がありません</p>
