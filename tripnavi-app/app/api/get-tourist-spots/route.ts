@@ -5,7 +5,7 @@ import { LogModel } from '../../../models/log';  // モデルのインポート
 
 // MongoDBへの接続
 const connectDB = async () => {
-    // console.log("MongoDBの接続状態:", mongoose.connection.readyState);
+    console.log("MongoDBの接続状態:", mongoose.connection.readyState);
     if (mongoose.connection.readyState === 0) {
         try {
             await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mydatabase');
@@ -113,4 +113,3 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, message: '観光地の取得に失敗しました' }, { status: 500 });
     }
 }
-
