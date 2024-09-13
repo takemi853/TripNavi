@@ -1,28 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 import { LogModel } from '../../../models/log';  // モデルのインポート
 
-// MongoDBへの接続
-const connectDB = async () => {
-    console.log("MongoDBの接続状態:", mongoose.connection.readyState);
-    if (mongoose.connection.readyState === 0) {
-        try {
-            await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mydatabase');
-            console.log("MongoDBに接続しました");
-        } catch (error) {
-            console.error("MongoDB接続エラー:", error);
-            throw new Error("データベース接続に失敗しました");
-        }
-    } else {
-        console.log("既にMongoDBに接続されています");
-    }
-};
+// // MongoDBへの接続
+// const connectDB = async () => {
+//     console.log("MongoDBの接続状態:", mongoose.connection.readyState);
+//     if (mongoose.connection.readyState === 0) {
+//         try {
+//             await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/mydatabase');
+//             console.log("MongoDBに接続しました");
+//         } catch (error) {
+//             console.error("MongoDB接続エラー:", error);
+//             throw new Error("データベース接続に失敗しました");
+//         }
+//     } else {
+//         console.log("既にMongoDBに接続されています");
+//     }
+// };
 
 
 export async function POST(request: NextRequest) {
     console.log("APIリクエストを受け取りました");
-    await connectDB();  // データベースに接続
+    // await connectDB();  // データベースに接続
 
     try {
         const { lat, lon, location } = await request.json();
@@ -81,13 +81,13 @@ export async function POST(request: NextRequest) {
         console.log("OpenAI APIレスポンス:", response.data);
 
         const touristSpots = response.data.choices[0].message.content;
-        // リクエストとレスポンスをデータベースに保存
-        const log = new LogModel({
-            request: { lat: lat || null, lon: lon || null, location: location || null },  
-            response: { success: true, data: touristSpots },
-            timestamp: new Date()
-        });
-        await log.save();
+        // // リクエストとレスポンスをデータベースに保存
+        // const log = new LogModel({
+        //     request: { lat: lat || null, lon: lon || null, location: location || null },  
+        //     response: { success: true, data: touristSpots },
+        //     timestamp: new Date()
+        // });
+        // await log.save();
         console.log("観光地リスト:", touristSpots);
         return NextResponse.json({ success: true, data: touristSpots }, { status: 200 });
 

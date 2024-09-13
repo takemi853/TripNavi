@@ -1,21 +1,48 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-const RouteSearch = () => {
+interface RouteStop {
+    destination: string;
+    transport: string;
+    distance?: string;
+    time_required?: string;
+    stay_duration?: string;
+}
+
+interface ParsedRouteResult {
+    start: string;
+    route: RouteStop[];
+    end: string;
+    total_distance?: string;
+    total_time?: string;
+}
+
+interface RouteResult {
+    route: RouteStop[];
+    start?: string;
+    end: string;
+    total_distance?: string;
+    total_time?: string;
+}
+
+interface RouteError {
+    error: string;
+}
+
+const RouteSearchContent = () => {
     const [locations, setLocations] = useState<string[]>(['']);
     const [loading, setLoading] = useState(false);
-    const [routeResult, setRouteResult] = useState<any | null>(null);
-    const searchParams = useSearchParams();  // URLパラメータを取得
+    const [routeResult, setRouteResult] = useState<RouteResult | RouteError | null>(null);
+    const searchParams = useSearchParams();
 
-    // 初期ロード時にURLから観光地を取得
     useEffect(() => {
         const spotsParam = searchParams.get('spots');
         if (spotsParam) {
             const parsedSpots = JSON.parse(spotsParam);
             const spotNames = parsedSpots.map((spot: { name: string }) => spot.name);
-            setLocations(spotNames);  // 観光地の名前をlocationsにセット
+            setLocations(spotNames);
         }
     }, [searchParams]);
 
@@ -48,17 +75,20 @@ const RouteSearch = () => {
                 body: JSON.stringify({ locations }),
             });
 
-            const data = await response.json();
-            console.log('APIからのレスポンス:', data);  // APIレスポンスを確認
-            if (data.success) {
-                const parsedRoute = JSON.parse(data.route);
+            const rawData = await response.json();
+            console.log('APIからのレスポンス:', rawData); // レスポンスデータを確認
+
+            // 正しいデータ構造かどうか確認し、データをパースする
+            if (rawData && rawData.success && typeof rawData.route === 'string') {
+                const parsedRoute: ParsedRouteResult = JSON.parse(rawData.route);
                 setRouteResult(parsedRoute);
             } else {
-                setRouteResult('ルートの取得に失敗しました。');
+                console.error('予期しないデータフォーマット:', rawData);
+                setRouteResult({ error: 'ルートの取得に失敗しました。' });
             }
         } catch (error) {
-            console.error('Error fetching route:', error);
-            setRouteResult('ルートの取得に失敗しました。');
+            console.error('Error parsing or fetching route:', error);
+            setRouteResult({ error: 'ルートの取得に失敗しました。' });
         } finally {
             setLoading(false);
         }
@@ -177,81 +207,13 @@ const RouteSearch = () => {
     );
 };
 
-export default RouteSearch;
 
 
-// 'use client';
-
-// import { useEffect, useState } from 'react';
-// import { useSearchParams } from 'next/navigation';
-
-// interface Spot {
-//     name: string;
-//     latitude?: number;
-//     longitude?: number;
-//     description: string;
-//     tags: string[];
-// }
-
-// export default function RouteSearch() {
-//     const [spots, setSpots] = useState<Spot[]>([]);
-//     const [inputValue, setInputValue] = useState(''); // 入力フィールドの状態
-//     const searchParams = useSearchParams();
-
-//     useEffect(() => {
-//         const spotsParam = searchParams.get('spots');
-//         if (spotsParam) {
-//             const spotsData = JSON.parse(spotsParam);
-//             setSpots(spotsData);
-
-//             // 観光地名を抽出して入力フィールドに設定
-//             const spotNames = spotsData.map((spot: Spot) => spot.name).join(', ');
-//             setInputValue(spotNames);
-//         }
-//     }, [searchParams]);
-
-//     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//         setInputValue(e.target.value);
-//     };
-
-//     return (
-//         <div className="min-h-screen flex flex-col justify-center items-center bg-gray-100">
-//             <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
-//                 <h1 className="text-3xl font-bold text-center mb-6">ルート検索</h1>
-
-//                 {/* 入力フィールド */}
-//                 <input
-//                     type="text"
-//                     value={inputValue}
-//                     onChange={handleInputChange}
-//                     className="w-full p-3 border border-gray-300 rounded-md mb-4"
-//                     placeholder="観光地を入力してください"
-//                 />
-
-//                 {/* 観光地一覧の表示 */}
-//                 {spots && spots.length > 0 ? (
-//                     <div className="space-y-6">
-//                         {spots.map((spot, index) => (
-//                             <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-//                                 <h2 className="text-xl font-semibold text-gray-900">{spot.name}</h2>
-//                                 <p className="text-gray-600 mt-2">{spot.description}</p>
-//                                 <div className="flex flex-wrap mt-4">
-//                                     {spot.tags.map((tag: string, tagIndex: number) => (
-//                                         <span
-//                                             key={tagIndex}
-//                                             className="text-xs font-medium bg-blue-100 text-blue-600 py-1 px-3 rounded-full mr-2 mb-2"
-//                                         >
-//                                             {tag}
-//                                         </span>
-//                                     ))}
-//                                 </div>
-//                             </div>
-//                         ))}
-//                     </div>
-//                 ) : (
-//                     <p className="text-center mt-6">観光地情報が見つかりません</p>
-//                 )}
-//             </div>
-//         </div>
-//     );
-// }
+// Suspenseでクライアントサイドレンダリングをラップ
+export default function RouteSearch() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <RouteSearchContent />
+        </Suspense>
+    );
+}
