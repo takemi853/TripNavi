@@ -3,40 +3,29 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-interface RouteStop {
+type RouteStop = {
     destination: string;
-    transport: string;
-    distance?: string;
-    time_required?: string;
-    stay_duration?: string;
-}
+    stay_duration?: number;
+    transport?: string;
+    distance?: number | string;
+    time_required?: number | string;
+};
 
-interface ParsedRouteResult {
-    start: string;
+type RouteResult = {
     route: RouteStop[];
     end: string;
-    total_distance?: string;
-    total_time?: string;
-}
+    total_distance?: number;
+    total_time?: number;
+};
 
-interface RouteResult {
-    route: RouteStop[];
-    start?: string;
-    end: string;
-    total_distance?: string;
-    total_time?: string;
-}
-
-interface RouteError {
-    error: string;
-}
-
-const RouteSearchContent = () => {
+const RouteSearchComponent = () => {
     const [locations, setLocations] = useState<string[]>(['']);
     const [loading, setLoading] = useState(false);
-    const [routeResult, setRouteResult] = useState<RouteResult | RouteError | null>(null);
-    const searchParams = useSearchParams();
+    const [routeResult, setRouteResult] = useState<RouteResult | null>(null);
+    const searchParams = useSearchParams();  // URLパラメータを取得
+    const [errorMessage, setErrorMessage] = useState<string | null>(null); 
 
+    // 初期ロード時にURLから観光地を取得
     useEffect(() => {
         const spotsParam = searchParams.get('spots');
         if (spotsParam) {
@@ -65,6 +54,7 @@ const RouteSearchContent = () => {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setLoading(true);
+        setErrorMessage(null);  // エラーメッセージをリセット
 
         try {
             const response = await fetch('/api/get-route', {
@@ -75,20 +65,19 @@ const RouteSearchContent = () => {
                 body: JSON.stringify({ locations }),
             });
 
-            const rawData = await response.json();
-            console.log('APIからのレスポンス:', rawData); // レスポンスデータを確認
-
-            // 正しいデータ構造かどうか確認し、データをパースする
-            if (rawData && rawData.success && typeof rawData.route === 'string') {
-                const parsedRoute: ParsedRouteResult = JSON.parse(rawData.route);
+            const data = await response.json();
+            console.log('APIからのレスポンス:', data);  // APIレスポンスを確認
+            if (data.success) {
+                const parsedRoute = JSON.parse(data.route);
                 setRouteResult(parsedRoute);
             } else {
-                console.error('予期しないデータフォーマット:', rawData);
-                setRouteResult({ error: 'ルートの取得に失敗しました。' });
+                setRouteResult(null);  // ルートが見つからない場合はnullに設定
+                setErrorMessage('ルートの取得に失敗しました。');  // エラーメッセージを設定
             }
         } catch (error) {
-            console.error('Error parsing or fetching route:', error);
-            setRouteResult({ error: 'ルートの取得に失敗しました。' });
+            console.error('Error fetching route:', error);
+            setRouteResult(null);
+            setErrorMessage('ルートの取得に失敗しました。');
         } finally {
             setLoading(false);
         }
@@ -142,7 +131,7 @@ const RouteSearchContent = () => {
                     routeResult && routeResult.route && Array.isArray(routeResult.route) && routeResult.route.length > 0 ? (
                         <div className="mt-6 bg-gray-50 p-6 rounded-lg shadow-md">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">提案されたルート</h3>
-                            {routeResult.route.map((stop: any, index: number) => (
+                            {routeResult.route.map((stop: RouteStop, index: number) => (
                                 <div key={index} className="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
                                     <div className="flex justify-between items-center">
                                         <h4 className="text-lg font-semibold text-blue-600">{index + 1}. {stop.destination}</h4>
@@ -164,13 +153,17 @@ const RouteSearchContent = () => {
                                     <p className="text-gray-700">
                                         移動時間: 
                                         <span className="font-medium">
-                                            {stop.time_required 
-                                                ? (typeof stop.time_required === 'number' || !isNaN(Number(stop.time_required)) 
-                                                    ? stop.time_required >= 60  // 60分以上なら「時間」、それ未満なら「分」
-                                                        ? `${Math.floor(stop.time_required / 60)}時間 ${stop.time_required % 60 ? `${stop.time_required % 60}分` : ''}`
-                                                        : `${stop.time_required} 分`
-                                                    : stop.time_required)  // 既に単位が含まれている場合はそのまま表示
-                                                : '不明'}
+                                        {stop.time_required 
+                                            ? (typeof stop.time_required === 'number'  // 数値の場合
+                                                ? stop.time_required >= 60  // 60分以上なら「時間」、それ未満なら「分」
+                                                    ? `${Math.floor(stop.time_required / 60)}時間 ${stop.time_required % 60 ? `${stop.time_required % 60}分` : ''}`
+                                                    : `${stop.time_required} 分`
+                                                : !isNaN(Number(stop.time_required))  // 文字列の場合、数値に変換可能か確認
+                                                    ? Number(stop.time_required) >= 60
+                                                        ? `${Math.floor(Number(stop.time_required) / 60)}時間 ${Number(stop.time_required) % 60 ? `${Number(stop.time_required) % 60}分` : ''}`
+                                                        : `${Number(stop.time_required)} 分`
+                                                    : stop.time_required)  // 数値に変換できない場合はそのまま表示
+                                            : '不明'}
                                         </span>
                                     </p>
 
@@ -198,7 +191,8 @@ const RouteSearchContent = () => {
                         </div>
 
                     ) : (
-                        routeResult && <p className="text-center mt-4 text-red-600">ルートが見つかりませんでした。</p>
+                        // routeResult && <p className="text-center mt-4 text-red-600">ルートが見つかりませんでした。</p>
+                        errorMessage && <p className="text-center mt-4 text-red-600">{errorMessage}</p>  // エラーメッセージの表示
                     )
                 )}
 
@@ -207,13 +201,12 @@ const RouteSearchContent = () => {
     );
 };
 
-
-
-// Suspenseでクライアントサイドレンダリングをラップ
-export default function RouteSearch() {
+const RouteSearch = () => {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <RouteSearchContent />
+        <Suspense fallback={<p>読み込み中...</p>}>
+            <RouteSearchComponent />
         </Suspense>
     );
-}
+};
+
+export default RouteSearch;
