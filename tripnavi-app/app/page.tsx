@@ -96,7 +96,7 @@ export default function Home() {
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-green-200 to-blue-300">
             <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
-                <h1 className="text-3xl font-bold text-center mb-6">観光地検索アプリ</h1>
+                <h1 className="text-3xl font-bold text-center mb-6">Trip Navi</h1>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label htmlFor="location" className="block text-sm font-medium text-gray-700">
