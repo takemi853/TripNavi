@@ -1,183 +1,99 @@
-'use client';
+"use client";
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { MapPin, Navigation, Search, Plane } from 'lucide-react'
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { getCoordinates } from '../helpers/getCoordinates';  // ヘルパーファイルをインポート
+export default function TripNavi() {
+  const [routeStart, setRouteStart] = useState('')
+  const [routeEnd, setRouteEnd] = useState('')
+  const [spotLocation, setSpotLocation] = useState('')
 
-// 観光地のデータ型を定義
-interface TouristSpot {
-    id: number;
-    name: string;
-    description: string;
-    latitude?: number | null;
-    longitude?: number | null;
+  const handleRouteSearch = () => {
+    console.log(`Searching route from ${routeStart} to ${routeEnd}`)
   }
 
-export default function Home() {
-    const [location, setLocation] = useState('');
-    const [result, setResult] = useState<TouristSpot[]>([]);  // 観光地のデータを格納
-    const [loading, setLoading] = useState(false);
-    const [selectedSpots, setSelectedSpots] = useState<TouristSpot[]>([]);  // 選択された観光地
-    const router = useRouter();
+  const handleSpotSearch = () => {
+    console.log(`Searching spots near ${spotLocation}`)
+  }
 
-    // 初期化時に localStorage から観光地リストと選択リストを復元
-    useEffect(() => {
-      const savedTouristSpots = localStorage.getItem('touristSpots');
-      if (savedTouristSpots) {
-          setResult(JSON.parse(savedTouristSpots));
-      }
-      // 戻ってきたときに選択リストをクリーンアップ
-      localStorage.removeItem('selectedSpots');
-    }, []);
-
-    const handleSubmit = async (event: React.FormEvent) => {
-      event.preventDefault();
-      setLoading(true);
-  
-      try {
-          const response = await fetch('/api/get-tourist-spots', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ location }),
-          });
-  
-          const data = await response.json();
-          if (data.success) {
-              const spots = JSON.parse(data.data);
-              console.log("Fetched tourist spots:", spots); // 取得した観光地のリストをログに出力
-  
-              // 各観光地の緯度・経度を取得し、リストに追加
-              const spotsWithCoordinates = await Promise.all(spots.map(async (spot: TouristSpot) => {
-                const coordinates = await getCoordinates(spot.name);
-                
-                // 緯度・経度が取得できない場合はnullを設定
-                const updatedSpot: TouristSpot = {
-                    ...spot,
-                    latitude: coordinates ? coordinates.latitude : null,
-                    longitude: coordinates ? coordinates.longitude : null,
-                };
-            
-                console.log(`Updated spot with coordinates:`, updatedSpot); // 更新後の観光地情報をログに出力
-                return updatedSpot;
-            }));
-              
-              setResult(spotsWithCoordinates);
-              localStorage.setItem('touristSpots', JSON.stringify(spotsWithCoordinates)); // 緯度・経度付きの観光地リストを保存
-          } else {
-              console.warn("No tourist spots found");
-              setResult([]);
-          }
-      } catch (error) {
-          console.error("Error fetching tourist spots:", error);
-          setResult([]);
-      } finally {
-          setLoading(false);
-      }
-  };
-
-    const handleCheck = (spot: TouristSpot) => {
-        if (selectedSpots.includes(spot)) {
-            const updatedSpots = selectedSpots.filter(s => s !== spot);  // すでに選択されていたら削除
-            setSelectedSpots(updatedSpots);
-            localStorage.setItem('selectedSpots', JSON.stringify(updatedSpots));  // 選択リストを更新
-        } else {
-            const updatedSpots = [...selectedSpots, spot];  // 新たに選択
-            setSelectedSpots(updatedSpots);
-            localStorage.setItem('selectedSpots', JSON.stringify(updatedSpots));  // 選択リストを更新
-        }
-    };
-    
-    const handleComplete = () => {
-        router.push(`/selected`);  // selected ページに遷移
-    };
-
-    return (
-        <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-green-200 to-blue-300">
-            <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
-                <h1 className="text-3xl font-bold text-center mb-6">Trip Navi</h1>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-                            場所または緯度・経度を入力してください:
-                        </label>
-                        <input
-                            type="text"
-                            id="location"
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
-                            required
-                            className="mt-2 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                        />
-                    </div>
-                    <div>
-                        <button
-                            type="submit"
-                            className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                            {loading ? '検索中...' : '検索'}
-                        </button>
-                    </div>
-                </form>
-
-                {loading ? (
-                    <p className="text-center mt-6">検索中...</p>
-                ) : result.length > 0 ? (
-                    <div className="mt-8">
-                        <h3 className="text-lg font-semibold mb-4">観光地リスト:</h3>
-                        <div className="space-y-6">
-                            {result.map((spot, index) => (
-                                <label
-                                    key={index}
-                                    className="bg-white p-6 rounded-lg shadow-md flex items-start space-x-4 hover:shadow-lg transition-shadow cursor-pointer"
-                                >
-                                    <div className="custom-checkbox-wrapper">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedSpots.includes(spot)}
-                                            onChange={() => handleCheck(spot)}
-                                            className="hidden"
-                                        />
-                                        <div
-                                            className={`custom-checkbox ${
-                                                selectedSpots.includes(spot) ? 'checked' : ''
-                                            }`}
-                                        ></div>
-                                    </div>
-                                    <div className="flex-1">
-                                        <h2 className="text-xl font-semibold text-gray-900">{spot.name}</h2>
-                                        <p className="text-gray-600 mt-2">{spot.description}</p>
-                                        {spot.latitude && spot.longitude ? (
-                                            <p className="text-gray-500">緯度: {spot.latitude}, 経度: {spot.longitude}</p>
-                                        ) : (
-                                            <p className="text-red-500">緯度・経度が見つかりませんでした</p>
-                                        )}
-                                    </div>
-                                </label>
-                            ))}
-                        </div>
-
-                        {/* 観光地選択を完了して selected ページに移動するボタン */}
-                        <button
-                            className="mt-6 w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                            onClick={handleComplete}
-                        >
-                            選択
-                        </button>
-
-                        {/* ルート探索ページに直接移動するボタン */}
-                        <button
-                            className="mt-4 w-full py-3 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            onClick={() => router.push(`/route-search`)}
-                        >
-                            ルート探索ページに移動
-                        </button>
-                    </div>
-                ) : (
-                    <p className="text-center mt-6">結果がありません</p>
-                )}
-            </div>
-        </div>
-    );
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white">
+      <div className="container mx-auto p-4">
+        <header className="text-center py-8 mb-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg">
+          <h1 className="text-4xl font-bold text-white mb-2 flex items-center justify-center">
+            <Plane className="mr-2 h-8 w-8" />
+            TripNavi
+          </h1>
+          <p className="text-blue-100">あなたの旅をナビゲート</p>
+        </header>
+        <Tabs defaultValue="route" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="route" className="text-lg py-3">
+              <Navigation className="mr-2 h-5 w-5" />
+              ルート検索
+            </TabsTrigger>
+            <TabsTrigger value="spot" className="text-lg py-3">
+              <MapPin className="mr-2 h-5 w-5" />
+              スポット検索
+            </TabsTrigger>
+          </TabsList>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <TabsContent value="route">
+              <Card className="shadow-lg">
+                <CardHeader className="bg-blue-50">
+                  <CardTitle className="text-2xl text-blue-700">ルート検索</CardTitle>
+                  <CardDescription>出発地と目的地を入力してください。</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="start" className="text-blue-600">出発地</Label>
+                    <Input id="start" placeholder="例: 東京駅" value={routeStart} onChange={(e) => setRouteStart(e.target.value)} className="border-blue-200 focus:border-blue-500" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="end" className="text-blue-600">目的地</Label>
+                    <Input id="end" placeholder="例: 大阪城" value={routeEnd} onChange={(e) => setRouteEnd(e.target.value)} className="border-blue-200 focus:border-blue-500" />
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={handleRouteSearch} className="w-full bg-blue-600 hover:bg-blue-700">
+                    <Search className="mr-2 h-5 w-5" />
+                    ルートを検索
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+            <TabsContent value="spot">
+              <Card className="shadow-lg">
+                <CardHeader className="bg-purple-50">
+                  <CardTitle className="text-2xl text-purple-700">スポット検索</CardTitle>
+                  <CardDescription>検索したい場所を入力してください。</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="location" className="text-purple-600">場所</Label>
+                    <Input id="location" placeholder="例: 京都" value={spotLocation} onChange={(e) => setSpotLocation(e.target.value)} className="border-purple-200 focus:border-purple-500" />
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={handleSpotSearch} className="w-full bg-purple-600 hover:bg-purple-700">
+                    <Search className="mr-2 h-5 w-5" />
+                    スポットを検索
+                  </Button>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+          </motion.div>
+        </Tabs>
+      </div>
+    </div>
+  )
 }
