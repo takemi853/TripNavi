@@ -13,7 +13,8 @@ const geistMono = localFont({
 });
 
 export const metadata = {
-  title: '観光地検索アプリ',
+  title: 'Trip Navi',
+  // title: '観光地検索アプリ',
   description: '観光地を検索するシンプルなアプリ',
 };
 
