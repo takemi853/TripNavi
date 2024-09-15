@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { MapPin, Navigation, Search, Plane, Loader2, CheckCircle } from 'lucide-react'
 
 import { getCoordinates } from '../helpers/getCoordinates';  // ヘルパーファイルをインポート
+import { v4 as uuidv4 } from 'uuid';
 
 
 // スポットの型定義
@@ -70,19 +71,36 @@ export default function TripNavi() {
             // console.log("Fetched tourist spots:", spots); // 取得した観光地のリストをログに出力
 
             // 各観光地の緯度・経度を取得し、リストに追加
-            const spotsWithCoordinates = await Promise.all(spots.map(async (spot: Spot) => {
-              const coordinates = await getCoordinates(spot.name);
+        //     const spotsWithCoordinates = await Promise.all(spots.map(async (spot: Spot) => {
+        //       const coordinates = await getCoordinates(spot.name);
               
-              // 緯度・経度が取得できない場合はnullを設定
-              const updatedSpot: Spot = {
-                  ...spot,
-                  latitude: coordinates ? coordinates.latitude : null,
-                  longitude: coordinates ? coordinates.longitude : null,
-              };
+        //       // 緯度・経度が取得できない場合はnullを設定
+        //       const updatedSpot: Spot = {
+        //           ...spot,
+        //           id: spot.id || uuidv4(),
+        //           latitude: coordinates ? coordinates.latitude : null,
+        //           longitude: coordinates ? coordinates.longitude : null,
+        //       };
           
-              console.log(`Updated spot with coordinates:`, updatedSpot); // 更新後の観光地情報をログに出力
-              return updatedSpot;
-          }));
+        //       console.log(`Updated spot with coordinates:`, updatedSpot); // 更新後の観光地情報をログに出力
+        //       return updatedSpot;
+        //   }));
+          const spotsWithCoordinates = await Promise.all(spots.map(async (spot: Spot) => {
+            const coordinates = await getCoordinates(spot.name);
+        
+            const updatedSpot: Spot = {
+                ...spot,
+                id: uuidv4(), // 常に新しいUUIDを割り当てる
+                latitude: coordinates ? coordinates.latitude : null,
+                longitude: coordinates ? coordinates.longitude : null,
+            };
+        
+            console.log(`Updated spot with ID: ${updatedSpot.id} and coordinates:`, updatedSpot); // IDを含めてログ出力
+            console.log(`Spot ID: ${updatedSpot.id}, Name: ${updatedSpot.name}`);
+            console.log('Selected spots after update:', selectedSpots);
+
+            return updatedSpot;
+        }));
             
             setSpotResults(spotsWithCoordinates);
             localStorage.setItem('touristSpots', JSON.stringify(spotsWithCoordinates)); // 緯度・経度付きの観光地リストを保存
@@ -101,17 +119,18 @@ export default function TripNavi() {
  // スポット選択のハンドラー
  const handleSpotSelection = (spot: Spot) => {
     setSelectedSpots((prevSelectedSpots) => {
-    // すでに選択されているかどうかをチェック
-    if (prevSelectedSpots.some((s) => s.id === spot.id)) {
-        // 選択されている場合はリストから削除
-        return prevSelectedSpots.filter((s) => s.id !== spot.id);
-    } else {
-        // 選択されていない場合はリストに追加
-        return [...prevSelectedSpots, spot];
-    }
+        const isAlreadySelected = prevSelectedSpots.some((s) => s.id === spot.id);
+        console.log('Spot clicked:', spot.name, 'Currently selected:', isAlreadySelected);
+
+        if (isAlreadySelected) {
+            console.log('Removing spot:', spot.name);
+            return prevSelectedSpots.filter((s) => s.id !== spot.id);
+        } else {
+            console.log('Adding spot:', spot.name);
+            return [...prevSelectedSpots, spot];
+        }
     });
- };
-  
+};
 
   const handleComplete = () => {
     console.log('Selected spots:', selectedSpots)
@@ -203,54 +222,30 @@ export default function TripNavi() {
                             selectedSpots.some(s => s.id === spot.id) ? 'border-purple-600' : ''
                         }`}
                         onClick={() => handleSpotSelection(spot)}
-                        >
+                    >
                         <CardHeader>
                             <div className="flex items-center space-x-2">
-                            <button
-                                onClick={(e) => {
-                                e.stopPropagation(); // カード全体のクリックイベントを防ぐ
-                                handleSpotSelection(spot);
-                                }}
-                                className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
-                                selectedSpots.some(s => s.id === spot.id)
-                                    ? 'bg-purple-600 text-white'
-                                    : 'bg-gray-200 text-gray-400 hover:bg-purple-100'
-                                }`}
-                            >
-                                <CheckCircle className="w-5 h-5" />
-                            </button>
-                            <CardTitle className="text-lg font-semibold">{spot.name}</CardTitle>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // カード全体のクリックイベントを防ぐ
+                                        handleSpotSelection(spot);
+                                    }}
+                                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
+                                        selectedSpots.some(s => s.id === spot.id)
+                                            ? 'bg-purple-600 text-white'
+                                            : 'bg-gray-200 text-gray-400 hover:bg-purple-100'
+                                    }`}
+                                >
+                                    <CheckCircle className="w-5 h-5" />
+                                </button>
+                                <CardTitle className="text-lg font-semibold">{spot.name}</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent>
                             <p className="text-gray-600">{spot.description}</p>
                         </CardContent>
                     </Card>
-
-                  
-                    // <Card key={spot.id} className="shadow-md hover:shadow-lg transition-shadow">
-                    //   <CardHeader>
-                    //     <div className="flex items-center space-x-2">
-                    //       <button
-                    //         onClick={() => handleSpotSelection(spot)}
-                    //         className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
-                    //           selectedSpots.some(s => s.id === spot.id)
-                    //             ? 'bg-purple-600 text-white'
-                    //             : 'bg-gray-200 text-gray-400 hover:bg-purple-100'
-                    //         }`}
-                    //       >
-                    //         <CheckCircle className="w-5 h-5" />
-                    //       </button>
-                    //       <CardTitle className="text-lg font-semibold">{spot.name}</CardTitle>
-                    //     </div>
-                    //   </CardHeader>
-                    //   <CardContent>
-                    //     <p className="text-gray-600">{spot.description}</p>
-                    //     {/* {spot.latitude && spot.longitude && (
-                    //       <p className="text-gray-500 mt-2">緯度: {spot.latitude}, 経度: {spot.longitude}</p>
-                    //     )} */}
-                    //   </CardContent>
-                    // </Card>
+                
                   ))}
                   <div className="mt-6 space-y-4">
                     <Button onClick={handleComplete} className="w-full bg-green-600 hover:bg-green-700">
